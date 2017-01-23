@@ -18,7 +18,7 @@
  * Copyright (C) 2004-2007 Simon Newton
  */
 
-#include "private.h"
+#include "AN_private.h"
 
 uint8_t _make_addr(uint8_t subnet, uint8_t addr);
 void check_merge_timeouts(node n, int port);
@@ -261,9 +261,9 @@ int handle_address(node n, artnet_packet p) {
 
   // first of all store existing port addresses
   // then we can work out if they change
-  for (i=0; i< ARTNET_MAX_PORTS; i++) {
-    addr[i] = n->ports.in[i].port_addr;
-  }
+  // for (i=0; i< ARTNET_MAX_PORTS; i++) {
+  //   addr[i] = n->ports.in[i].port_addr;
+  // }
 
   // program subnet
   old_subnet = p->data.addr.subnet;
@@ -281,7 +281,7 @@ int handle_address(node n, artnet_packet p) {
   if (old_subnet != n->state.subnet) {
     // if it does we need to change all port addresses
     for(i=0; i< ARTNET_MAX_PORTS; i++) {
-      n->ports.in[i].port_addr = _make_addr(n->state.subnet, n->ports.in[i].port_addr);
+      // n->ports.in[i].port_addr = _make_addr(n->state.subnet, n->ports.in[i].port_addr);
       n->ports.out[i].port_addr = _make_addr(n->state.subnet, n->ports.out[i].port_addr);
     }
   }
@@ -292,12 +292,12 @@ int handle_address(node n, artnet_packet p) {
       continue;
     } else if (p->data.addr.swin[i] == PROGRAM_DEFAULTS) {
       // reset to defaults
-      n->ports.in[i].port_addr = _make_addr(n->state.subnet, n->ports.in[i].port_default_addr);
-      n->ports.in[i].port_net_ctl = FALSE;
+      // n->ports.in[i].port_addr = _make_addr(n->state.subnet, n->ports.in[i].port_default_addr);
+      // n->ports.in[i].port_net_ctl = FALSE;
 
     } else if ( p->data.addr.swin[i] & PROGRAM_CHANGE_MASK) {
-      n->ports.in[i].port_addr = _make_addr(n->state.subnet, p->data.addr.swin[i]);
-      n->ports.in[i].port_net_ctl = TRUE;
+      // n->ports.in[i].port_addr = _make_addr(n->state.subnet, p->data.addr.swin[i]);
+      // n->ports.in[i].port_net_ctl = TRUE;
     }
   }
 
@@ -312,15 +312,15 @@ int handle_address(node n, artnet_packet p) {
       n->ports.out[i].port_enabled = TRUE;
     } else if ( p->data.addr.swout[i] & PROGRAM_CHANGE_MASK) {
       n->ports.out[i].port_addr = _make_addr(n->state.subnet, p->data.addr.swout[i]);
-      n->ports.in[i].port_net_ctl = TRUE;
+      // n->ports.in[i].port_net_ctl = TRUE;
       n->ports.out[i].port_enabled = TRUE;
     }
   }
 
   // reset sequence numbers if the addresses change
   for (i=0; i< ARTNET_MAX_PORTS; i++) {
-    if (addr[i] != n->ports.in[i].port_addr)
-      n->ports.in[i].seq = 0;
+    // if (addr[i] != n->ports.in[i].port_addr)
+    //   n->ports.in[i].seq = 0;
   }
 
   // check command

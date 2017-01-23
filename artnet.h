@@ -29,7 +29,7 @@
 
 #include "UDPSocket.h"
 
-#include <artnet/common.h>
+#include <AN_common.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -204,14 +204,6 @@ extern int artnet_raw_send_dmx(artnet_node vn,
   uint8_t uni,
   int16_t length,
   const uint8_t *data);
-extern int artnet_send_address(artnet_node n,
-  artnet_node_entry e,
-  const char *shortName,
-  const char *longName,
-  uint8_t inAddr[ARTNET_MAX_PORTS],
-  uint8_t outAddr[ARTNET_MAX_PORTS],
-  uint8_t subAddr,
-  artnet_port_command_t cmd);
 
 // recv functions
 extern uint8_t *artnet_read_dmx(artnet_node n, int port_id, int *length);

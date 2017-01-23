@@ -20,7 +20,7 @@
 
 #include <stdarg.h>
 #include <stdio.h>
-#include "private.h"
+#include "AN_private.h"
 
 // static buffer for the error strings
 char artnet_errstr[256];

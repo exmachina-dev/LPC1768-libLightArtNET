@@ -17,7 +17,7 @@
  * Implementes the external functions for libartnet
  * Copyright (C) 2004-2007 Simon Newton
  */
-#include "private.h"
+#include "AN_private.h"
 #include "serial.h"
 
 // various constants used everywhere
@@ -88,7 +88,6 @@ artnet_node artnet_new(const char *ip, const char *bcast, const char *gw, int ve
     printf("state_t: %d, %d\r\n", n, sizeof(node_state_t));
     printf("callbacks_t: %d, %d\r\n", n, sizeof(node_callbacks_t));
     printf("reply_t: %d, %d\r\n", n, sizeof(artnet_reply_t));
-    ARTNET_PRINTF("peering_t: %d, %d\r\n", n, sizeof(node_peering_t));
 
     if (!n) {
         artnet_error("malloc failure");
@@ -104,11 +103,6 @@ artnet_node artnet_new(const char *ip, const char *bcast, const char *gw, int ve
     n->state.esta_hi = ESTA_HI;
     n->state.esta_lo = ESTA_LO;
     n->state.bcast_limit = 0;
-
-    n->peering.peer = NULL;
-    n->peering.master = TRUE;
-
-    //n->sd = &_sock;
 
     if (artnet_net_init(n, ip, bcast, gw)) {
         free(n);
@@ -126,11 +120,7 @@ artnet_node artnet_new(const char *ip, const char *bcast, const char *gw, int ve
     for (i=0; i < ARTNET_MAX_PORTS; i++) {
         n->ports.out[i].merge_mode = ARTNET_MERGE_HTP;
         n->ports.out[i].port_enabled = FALSE;
-        n->ports.in[i].port_enabled = FALSE;
-
-        // reset tods
-        reset_tod(&n->ports.in[i].port_tod);
-        reset_tod(&n->ports.out[i].port_tod);
+        // n->ports.in[i].port_enabled = FALSE;
     }
     return n;
 }
@@ -307,57 +297,9 @@ int artnet_read(artnet_node vn, int timeout) {
 
         if (p.length > MIN_PACKET_SIZE && get_type(&p)) {
             handle(n, &p);
-            for (tmp = n->peering.peer; tmp != NULL && tmp != n; tmp = tmp->peering.peer) {
-                handle(tmp, &p);
-            }
         }
     }
     return ARTNET_EOK;
-}
-
-
-/*
- * To get around the 4 universes per node limitation , we can start more than
- * one node on different ip addresses - you'll need to add aliases to your
- * network interface something like:
- *
- * $ ifconfig eth0:1 10.0.0.10 netmask 255.255.255.0
- *
- * Then the nodes must be joined so that they can share the socket
- * bound to the broadcast address.
- * TODO: use IP_PKTINFO so that packets are sent from the correct source ip
- *
- * @param vn1 The artnet node
- * @param vn2 The second artnet node
- *
- * @return 0 on sucess, non 0 on failure
- */
-int artnet_join(artnet_node vn1, artnet_node vn2) {
-
-    check_nullnode(vn1);
-    check_nullnode(vn2);
-
-    node n1 = (node) vn1;
-    node n2 = (node) vn2;
-    node tmp, n;
-
-    if (n1->state.mode == ARTNET_ON || n2->state.mode == ARTNET_ON) {
-        artnet_error("%s called after artnet_start", __FUNCTION__);
-        return ARTNET_EACTION;
-    }
-
-    tmp = n1->peering.peer == NULL ? n1 : n1->peering.peer;
-    n1->peering.peer = n2;
-    for (n = n2; n->peering.peer != NULL && n->peering.peer != n2; n = n->peering.peer) ;
-    n->peering.peer = tmp;
-
-    // make sure there is only 1 master
-    for (n = n1->peering.peer; n != n1; n = n->peering.peer)
-        n->peering.master = FALSE;
-
-    n1->peering.master = TRUE;
-
-    return ARTNET_ESTATE;
 }
 
 
@@ -445,104 +387,6 @@ int artnet_send_poll_reply(artnet_node vn) {
         return ARTNET_EACTION;
 
     return artnet_tx_poll_reply(n, FALSE);
-}
-
-
-#ifdef ARTNET_FEATURE_NODE_LIST
-/*
- * Sends some dmx data
- *
- * @param vn the artnet_node
- */
-int artnet_send_dmx(artnet_node vn,
-        int port_id,
-        int16_t length,
-        const uint8_t *data) {
-    node n = (node) vn;
-    artnet_packet_t p;
-    int ret;
-    input_port_t *port;
-
-    check_nullnode(vn);
-
-    if (n->state.mode != ARTNET_ON)
-        return ARTNET_EACTION;
-
-    if (port_id < 0 || port_id >= ARTNET_MAX_PORTS) {
-        artnet_error("%s : port index out of bounds (%i < 0 || %i > ARTNET_MAX_PORTS)", __FUNCTION__, port_id);
-        return ARTNET_EARG;
-    }
-    port = &n->ports.in[port_id];
-
-    if (length < 1 || length > ARTNET_DMX_LENGTH) {
-        artnet_error("%s : Length of dmx data out of bounds (%i < 1 || %i > ARTNET_MAX_DMX)", __FUNCTION__, length);
-        return ARTNET_EARG;
-    }
-
-    if (port->port_status & PORT_STATUS_DISABLED_MASK) {
-        artnet_error("%s : attempt to send on a disabled port (id:%i)", __FUNCTION__, port_id);
-        return ARTNET_EARG;
-    }
-
-    // ok we're going to send now, make sure we turn the activity bit on
-    port->port_status = port->port_status | PORT_STATUS_ACT_MASK;
-
-    p.length = sizeof(artnet_dmx_t) - (ARTNET_DMX_LENGTH - length);
-
-    // now build packet
-    memcpy(&p.data.admx.id, ARTNET_STRING, ARTNET_STRING_SIZE);
-    p.data.admx.opCode =  htols(ARTNET_DMX);
-    p.data.admx.verH = 0;
-    p.data.admx.ver = ARTNET_VERSION;
-    p.data.admx.sequence = port->seq;
-    p.data.admx.physical = port_id;
-    p.data.admx.universe = htols(port->port_addr);
-
-    // set length
-    p.data.admx.lengthHi = short_get_high_byte(length);
-    p.data.admx.length = short_get_low_byte(length);
-    memcpy(&p.data.admx.data, data, length);
-
-    // default to bcast
-    p.to = n->state.bcast_addr;
-
-    if (n->state.bcast_limit == 0) {
-        if ((ret = artnet_net_send(n, &p)))
-            return ret;
-    } else {
-        int nodes;
-        // find the number of ports for this uni
-        SI *ips = (in_addr *) malloc(sizeof(SI) * n->state.bcast_limit);
-
-        if (!ips) {
-            // Fallback to broadcast mode
-            if ((ret = artnet_net_send(n, &p)))
-                return ret;
-        }
-
-        nodes = find_nodes_from_uni(&n->node_list,
-                port->port_addr,
-                ips,
-                n->state.bcast_limit);
-
-        if (nodes > n->state.bcast_limit) {
-            // fall back to broadcast
-            free(ips);
-            if ((ret = artnet_net_send(n, &p))) {
-                return ret;
-            }
-        } else {
-            // unicast to the specified nodes
-            int i;
-            for (i =0; i < nodes; i++) {
-                p.to = ips[i];
-                artnet_net_send(n, &p);
-            }
-            free(ips);
-        }
-    }
-    port->seq++;
-    return ARTNET_EOK;
 }
 
 
@@ -661,9 +505,9 @@ int artnet_set_subnet_addr(artnet_node vn, uint8_t subnet) {
 
         // redo the addresses for each port
         for (i =0; i < ARTNET_MAX_PORTS; i++) {
-            n->ports.in[i].port_addr = ((n->state.subnet & LOW_NIBBLE) << 4) | (n->ports.in[i].port_addr & LOW_NIBBLE);
+            // n->ports.in[i].port_addr = ((n->state.subnet & LOW_NIBBLE) << 4) | (n->ports.in[i].port_addr & LOW_NIBBLE);
             // reset dmx sequence number
-            n->ports.in[i].seq = 0;
+            // n->ports.in[i].seq = 0;
 
             n->ports.out[i].port_addr = ((n->state.subnet & LOW_NIBBLE) << 4) | (n->ports.out[i].port_addr & LOW_NIBBLE);
         }
@@ -790,9 +634,9 @@ int artnet_set_port_addr(artnet_node vn,
     }
 
     if (dir == ARTNET_INPUT_PORT) {
-        port = &n->ports.in[id].port;
-        changed = n->ports.in[id].port_enabled?0:1;
-        n->ports.in[id].port_enabled = TRUE;
+        // port = &n->ports.in[id].port;
+        // changed = n->ports.in[id].port_enabled?0:1;
+        // n->ports.in[id].port_enabled = TRUE;
     } else if (dir == ARTNET_OUTPUT_PORT) {
         port = &n->ports.out[id].port;
         changed = n->ports.out[id].port_enabled?0:1;
@@ -810,8 +654,8 @@ int artnet_set_port_addr(artnet_node vn,
         port->addr = ((n->state.subnet & LOW_NIBBLE) << 4) | (addr & LOW_NIBBLE);
 
         // reset seq if input port
-        if (dir == ARTNET_INPUT_PORT)
-            n->ports.in[id].seq = 0;
+        // if (dir == ARTNET_INPUT_PORT)
+        //     n->ports.in[id].seq = 0;
 
         if (n->state.mode == ARTNET_ON) {
             if ((ret = artnet_tx_build_art_poll_reply(n)))
@@ -846,7 +690,8 @@ int artnet_get_universe_addr(artnet_node vn, int id, artnet_port_dir_t dir) {
     }
 
     if (dir == ARTNET_INPUT_PORT)
-        return n->ports.in[id].port.addr;
+        return ARTNET_EARG;
+    //     return n->ports.in[id].port.addr;
     else if (dir == ARTNET_OUTPUT_PORT)
         return n->ports.out[id].port.addr;
     else {
@@ -865,7 +710,7 @@ int artnet_get_config(artnet_node vn, artnet_node_config_t *config) {
     config->subnet = n->state.subnet;
 
     for (i = 0; i < ARTNET_MAX_PORTS; i++) {
-        config->in_ports[i] = n->ports.in[i].port.addr & LOW_NIBBLE;
+        // config->in_ports[i] = n->ports.in[i].port.addr & LOW_NIBBLE;
         config->out_ports[i] = n->ports.out[i].port.addr & LOW_NIBBLE;
     }
 

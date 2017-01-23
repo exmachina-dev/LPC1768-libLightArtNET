@@ -18,7 +18,7 @@
  * Copyright (C) 2004-2005 Simon Newton
  */
 
-#include "private.h"
+#include "AN_private.h"
 
 /*
  * Send an art poll
@@ -81,7 +81,7 @@ int artnet_tx_poll_reply(node n, int response) {
   memcpy(&reply.data, &n->ar_temp, sizeof(artnet_reply_t));
 
   for (i=0; i< ARTNET_MAX_PORTS; i++) {
-    reply.data.ar.goodinput[i] = n->ports.in[i].port_status;
+    // reply.data.ar.goodinput[i] = n->ports.in[i].port_status;
     reply.data.ar.goodoutput[i] = n->ports.out[i].port_status;
   }
 
@@ -399,18 +399,18 @@ int artnet_tx_build_art_poll_reply(node n) {
   // port stuff here
   ar->numbportsH = 0;
 
-  for (i = ARTNET_MAX_PORTS; i > 0; i--) {
-    if (n->ports.out[i-1].port_enabled || n->ports.in[i-1].port_enabled)
-      break;
-  }
+  // for (i = ARTNET_MAX_PORTS; i > 0; i--) {
+  //   if (n->ports.out[i-1].port_enabled || n->ports.in[i-1].port_enabled)
+  //     break;
+  // }
 
   ar->numbports = i;
 
   for (i=0; i< ARTNET_MAX_PORTS; i++) {
     ar->porttypes[i] = n->ports.types[i];
-    ar->goodinput[i] = n->ports.in[i].port_status;
+    // ar->goodinput[i] = n->ports.in[i].port_status;
     ar->goodoutput[i] = n->ports.out[i].port_status;
-    ar->swin[i] = n->ports.in[i].port_addr;
+    // ar->swin[i] = n->ports.in[i].port_addr;
     ar->swout[i] = n->ports.out[i].port_addr;
   }
 

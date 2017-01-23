@@ -27,7 +27,7 @@
 #include "NetworkInterface.h"
 #include "nsapi_types.h"
 
-#include "private.h"
+#include "AN_private.h"
 
 extern EthernetInterface* ARTNET_ETH_PTR;
 
@@ -105,9 +105,6 @@ int artnet_net_start(node n) {
     artnet_socket_t sock;
     node tmp;
 
-    // only attempt to bind if we are the group master
-    if (n->peering.master == TRUE) {
-
         // create socket
         sock = new UDPSocket();
         int nsapi_rtn;
@@ -130,7 +127,6 @@ int artnet_net_start(node n) {
         }
 
         sock->set_blocking(false);
-    }
 
     // allow reusing 6454 port _ 
     // Not possible with UDPSocket ?
@@ -153,10 +149,6 @@ int artnet_net_start(node n) {
 
 
     n->sd = sock;
-
-    // Propagate the socket to all our peers
-    for (tmp = n->peering.peer; tmp && tmp != n; tmp = tmp->peering.peer)
-        tmp->sd = sock;
 
     return ARTNET_EOK;
 }

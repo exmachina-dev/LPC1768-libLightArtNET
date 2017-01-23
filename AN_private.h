@@ -31,9 +31,8 @@
 #include <stdio.h>
 
 #include "artnet.h"
-#include "artnet/packets.h"
-#include "misc.h"
-#include "tod.h"
+#include "AN_packets.h"
+#include "AN_misc.h"
 
 #ifndef ARTNET_PRINTF
 #define ARTNET_PRINTF   printf
@@ -255,7 +254,6 @@ typedef struct {
   uint8_t enabled;      // true if the port has had it's address set, this is internal only,
                 // it's not used by the ArtNet protocol, otherwise the node keeps
                 // picking up packets for the 0x00 port
-  tod_t tod;
 } g_port_t;
 
 /**
@@ -311,7 +309,6 @@ typedef struct {
 #define port_net_ctl port.net_ctl
 #define port_status port.status
 #define port_enabled port.enabled
-#define port_tod port.tod
 
 // End node list structures
 //-----------------------------------------------------------------------------
@@ -351,12 +348,6 @@ typedef struct {
 } node_state_t;
 
 
-typedef struct {
-  struct artnet_node_s *peer;        // peer if we've joined a group
-  int   master;
-} node_peering_t;
-
-
 /**
  * The main node structure
  */
@@ -366,11 +357,9 @@ typedef struct artnet_node_s{
   node_callbacks_t callbacks;  // the callbacks struct
   struct ports_s {
     uint8_t  types[ARTNET_MAX_PORTS];    // type of port
-    input_port_t in[ARTNET_MAX_PORTS];   // input ports
     output_port_t out[ARTNET_MAX_PORTS]; // output ports
   } ports;
   artnet_reply_t ar_temp;       // buffered artpoll reply packet
-  node_peering_t peering;       // peer if we've joined a group
 } artnet_node_t;
 
 

@@ -27,7 +27,7 @@
 
 #include <inet.h>
 
-#include <artnet/common.h>
+#include <AN_common.h>
 
 
 
@@ -101,7 +101,6 @@ struct artnet_reply_s {
     uint8_t  sp3;
     uint8_t  style;
     uint8_t  mac[ARTNET_MAC_SIZE];
-    uint8_t  filler[29];
 } PACKED;
 
 typedef struct artnet_reply_s artnet_reply_t;
