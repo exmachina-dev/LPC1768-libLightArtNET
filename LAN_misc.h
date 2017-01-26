@@ -18,14 +18,14 @@
  * Copyright (C) 2004-2005 Simon Newton
  */
 
-#ifndef ARTNET_MISC_H
-#define ARTNET_MISC_H
+#ifndef ARTNET_MISC_H_
+#define ARTNET_MISC_H_
 
 #include <errno.h>
 #include <string.h>
 
 extern char artnet_errstr[256];
-void artnet_error(const char *fmt, ...);
+// void artnet_error(const char *fmt, ...);
 int32_t artnet_misc_nbytes_to_32(uint8_t bytes[4]);
 void artnet_misc_int_to_bytes(int data, uint8_t *bytes);
 

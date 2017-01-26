@@ -19,17 +19,15 @@
  */
 
 
-#ifndef ARTNET_PACKETS_H
-#define ARTNET_PACKETS_H
+#ifndef LAN_PACKETS_H_
+#define LAN_PACKETS_H_
 
 #include <sys/types.h>
 #include <stdint.h>
 
 #include <inet.h>
 
-#include <AN_common.h>
-
-
+#include "LAN_common.h"
 
 
 enum artnet_packet_type_e {
@@ -54,7 +52,7 @@ enum artnet_packet_type_e {
     ARTNET_MEDIA = 0x9000,
     ARTNET_MEDIAPATCH = 0x9200,
     ARTNET_MEDIACONTROLREPLY = 0x9300
-} PACKED;
+} __attribute__((packed));
 
 typedef enum artnet_packet_type_e artnet_packet_type_t;
 
@@ -65,7 +63,7 @@ struct	artnet_poll_s {
     uint8_t  ver;
     uint8_t  ttm;
     uint8_t  pad;
-} PACKED;
+} __attribute__((packed));
 
 typedef struct artnet_poll_s artnet_poll_t;
 
@@ -96,12 +94,14 @@ struct artnet_reply_s {
     uint8_t  swvideo;
     uint8_t  swmacro;
     uint8_t  swremote;
-    uint8_t  sp1;
-    uint8_t  sp2;
-    uint8_t  sp3;
+    uint8_t  sp1[3];
     uint8_t  style;
     uint8_t  mac[ARTNET_MAC_SIZE];
-} PACKED;
+    uint8_t  bind_ip[4];
+    uint8_t  bind_index;
+    uint8_t  status2;
+    uint8_t  sp2[26];
+} __attribute__((packed));
 
 typedef struct artnet_reply_s artnet_reply_t;
 
@@ -133,7 +133,7 @@ struct artnet_ipprog_s {
     uint8_t  Spare7;
     uint8_t  Spare8;
 
-} PACKED;
+} __attribute__((packed));
 
 typedef struct artnet_ipprog_s artnet_ipprog_t;
 
@@ -164,7 +164,7 @@ struct artnet_ipprog_reply_s {
     uint8_t  Spare6;
     uint8_t  Spare7;
     uint8_t  Spare8;
-} PACKED;
+} __attribute__((packed));
 
 typedef struct artnet_ipprog_reply_s artnet_ipprog_reply_t;
 
@@ -183,7 +183,7 @@ struct artnet_address_s {
     uint8_t  subnet;
     uint8_t  swvideo;
     uint8_t  command;
-} PACKED;
+} __attribute__((packed));
 
 typedef struct artnet_address_s artnet_address_t;
 
@@ -199,7 +199,7 @@ struct artnet_dmx_s {
     uint8_t  lengthHi;
     uint8_t  length;
     uint8_t  data[ARTNET_DMX_LENGTH];
-} PACKED;
+} __attribute__((packed));
 
 typedef struct artnet_dmx_s artnet_dmx_t;
 
