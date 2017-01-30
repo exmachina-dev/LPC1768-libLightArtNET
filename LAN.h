@@ -125,7 +125,7 @@ extern void LAN_fill_poll_reply(artnet_node_t *node, artnet_reply_t *poll_reply)
 extern int LAN_recv(artnet_node_t *node, artnet_packet_t *p);
 extern int LAN_send(artnet_node_t *node, artnet_packet_t *packet);
 
-// artnet.cpp
+// LAN.cpp
 extern int LAN_init(artnet_node_t *node);
 extern void LAN_set_port(artnet_node_t *node, uint8_t subnet_hi, uint8_t subnet_lo);
 extern void LAN_set_dmx(artnet_node_t *node, uint8_t dstart, uint8_t dfootprint);
@@ -133,6 +133,8 @@ extern void LAN_set_dmx_callback(artnet_node_t *node, void (*cb)(uint16_t port, 
 extern void LAN_set_network(
         artnet_node_t *node, in_addr ip,
         in_addr bcast, in_addr gateway, in_addr netmask, uint8_t *mac_addr);
+extern void LAN_announce(artnet_node_t *node);
+extern void LAN_set_name(artnet_node_t *node, char *short_name, char *long_name);
 extern void LAN_handle_poll(artnet_node_t *node, artnet_packet_t *p);
 extern void LAN_handle_dmx(artnet_node_t *node, artnet_packet_t *p);
 

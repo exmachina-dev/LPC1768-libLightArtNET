@@ -83,6 +83,7 @@ int LAN_init(artnet_node_t *node) {
     node->dmx_callback = NULL;
 
     node->status = ARTNET_ON;
+
     return ARTNET_EOK;
 }
 
@@ -111,9 +112,14 @@ void LAN_set_network(artnet_node_t *node, in_addr ip,
     memcpy(node->mac_addr, mac_addr, ARTNET_MAC_SIZE);
 }
 
+void LAN_announce(artnet_node_t *node) {
+    node->reply_addr = node->bcast_addr;
+    LAN_send_poll_reply(node, 0);
+}
+
 void LAN_set_name(artnet_node_t *node, char *short_name, char *long_name) {
-    memcpy(node->short_name, short_name, sizeof(short_name));
-    memcpy(node->long_name, long_name, sizeof(long_name));
+    memcpy(node->short_name, short_name, ARTNET_SHORT_NAME_LENGTH);
+    memcpy(node->long_name, long_name, ARTNET_LONG_NAME_LENGTH);
 }
 
 void LAN_handle_poll(artnet_node_t *node, artnet_packet_t *p) {

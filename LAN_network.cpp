@@ -47,7 +47,7 @@ int LAN_recv(artnet_node_t *node, artnet_packet_t *p) {
     len = LAN_sock->recvfrom(&client_addr, &(p->data), sizeof(p->data));
 
     if (len < 0) {
-        return ARTNET_ENET;
+        return (int)len;
     }
 
     client_ip = inet_addr(client_addr.get_ip_address());
