@@ -47,7 +47,7 @@ int LAN_send_poll_reply(artnet_node_t *node, int response) {
 void LAN_fill_poll_reply(artnet_node_t *node, artnet_reply_t *poll_reply)
 {
     //fill to 0's
-    memset (poll_reply, 0, sizeof(poll_reply));
+    memset (poll_reply, 0, sizeof(artnet_reply_t));
 
     // TODO: Finish fill_poll_reply
     //copy data from node
