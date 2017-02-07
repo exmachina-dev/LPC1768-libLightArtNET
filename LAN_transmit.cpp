@@ -28,19 +28,12 @@
  *            false if this reply is due to the node changing it's conditions
  */
 int LAN_send_poll_reply(artnet_node_t *node, int response) {
-  int i;
-
   LAN_fill_poll_reply(node, &LAN_packet->data.ar);
 
   LAN_packet->to = node->reply_addr;
 
   LAN_packet->type = ARTNET_REPLY;
   LAN_packet->length = sizeof(artnet_reply_t);
-
-  // for (i=0; i< ARTNET_MAX_PORTS; i++) {
-  //   LAN_packet.data.ar.goodinput[i] = 0x00;
-  //   LAN_packet.data.ar.goodoutput[i] = node->ports.output[i];
-  // }
 
   snprintf((char *) &LAN_packet->data.ar.nodereport,
            sizeof(LAN_packet->data.ar.nodereport),
