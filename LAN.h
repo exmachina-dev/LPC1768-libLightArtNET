@@ -134,7 +134,7 @@ extern void LAN_set_network(
         artnet_node_t *node, in_addr ip,
         in_addr bcast, in_addr gateway, in_addr netmask, uint8_t *mac_addr);
 extern void LAN_announce(artnet_node_t *node);
-extern void LAN_set_name(artnet_node_t *node, char *short_name, char *long_name);
+extern void LAN_set_name(artnet_node_t *node, const char *short_name, const char *long_name);
 extern void LAN_handle_poll(artnet_node_t *node, artnet_packet_t *p);
 extern void LAN_handle_dmx(artnet_node_t *node, artnet_packet_t *p);
 

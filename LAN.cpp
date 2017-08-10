@@ -117,7 +117,7 @@ void LAN_announce(artnet_node_t *node) {
     LAN_send_poll_reply(node, 0);
 }
 
-void LAN_set_name(artnet_node_t *node, char *short_name, char *long_name) {
+void LAN_set_name(artnet_node_t *node, const char *short_name, const char *long_name) {
     memcpy(node->short_name, short_name, ARTNET_SHORT_NAME_LENGTH);
     memcpy(node->long_name, long_name, ARTNET_LONG_NAME_LENGTH);
 }
