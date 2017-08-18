@@ -135,6 +135,8 @@ extern void LAN_set_network(
         in_addr bcast, in_addr gateway, in_addr netmask, uint8_t *mac_addr);
 extern void LAN_announce(artnet_node_t *node);
 extern void LAN_set_name(artnet_node_t *node, const char *short_name, const char *long_name);
+extern void LAN_set_esta(artnet_node_t *node, const char esta_lo, const char esta_hi);
+extern void LAN_set_oem(artnet_node_t *node, const uint8_t oem_lo, const uint8_t oem_hi);
 extern void LAN_handle_poll(artnet_node_t *node, artnet_packet_t *p);
 extern void LAN_handle_dmx(artnet_node_t *node, artnet_packet_t *p);
 

@@ -68,13 +68,13 @@ int LAN_init(artnet_node_t *node) {
 
 
     sprintf((char *)node->id, ARTNET_STRING);
-    node->esta_hi = (uint8_t)'E';        // The ESTA manufacturer code.
-    node->esta_lo = (uint8_t)'M';        // The ESTA manufacturer code.
-    node->fmw_hi       = 0;        // high byte of Node firmware revision number.
+    node->esta_hi       = ESTA_HI;  // The ESTA manufacturer code.
+    node->esta_lo       = ESTA_LO;  // The ESTA manufacturer code.
+    node->fmw_hi        = 0;        // high byte of Node firmware revision number.
     node->fmw_lo        = 1;        // low byte of Node firmware revision number.
-    node->oem_hi       = 0;        // high byte of the oem value.
-    node->oem_lo        = 0xFF;     // low byte of the oem value. (0x00FF = developer code)
-    node->ubea       = 0;        // This field contains the firmware version of the User Bios Extension Area (UBEA). 0 if not used
+    node->oem_hi        = OEM_HI;   // high byte of the oem value.
+    node->oem_lo        = OEM_LO;   // low byte of the oem value. (0x00FF = developer code)
+    node->ubea          = 0;        // This field contains the firmware version of the User Bios Extension Area (UBEA). 0 if not used
     node->status     = ARTNET_STANDBY;
     node->swvideo    = 0;
     node->swmacro    = 0;
@@ -120,6 +120,16 @@ void LAN_announce(artnet_node_t *node) {
 void LAN_set_name(artnet_node_t *node, const char *short_name, const char *long_name) {
     memcpy(node->short_name, short_name, ARTNET_SHORT_NAME_LENGTH);
     memcpy(node->long_name, long_name, ARTNET_LONG_NAME_LENGTH);
+}
+
+void LAN_set_esta(artnet_node_t *node, const char esta_lo, const char esta_hi) {
+    node->esta_lo = esta_lo;
+    node->esta_hi = esta_hi;
+}
+
+void LAN_set_oem(artnet_node_t *node, const uint8_t oem_lo, const uint8_t oem_hi) {
+    node->oem_lo = oem_lo;
+    node->oem_hi = oem_hi;
 }
 
 void LAN_handle_poll(artnet_node_t *node, artnet_packet_t *p) {
